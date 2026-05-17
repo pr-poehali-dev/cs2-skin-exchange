@@ -1,5 +1,6 @@
 import { useState } from "react";
 import Icon from "@/components/ui/icon";
+import { SteamUser } from "@/hooks/useAuth";
 
 const TRADES = [
   { id: "TRD-8821", date: "17 мая 2026, 14:32", type: "sell", items: ["AK-47 | Asiimov FT"], amount: 14200, status: "completed", partner: "ShadowBlade_CS" },
@@ -30,9 +31,23 @@ const typeConfig = {
   exchange: { label: "Обмен", color: "#FF6B00", icon: "ArrowLeftRight" },
 };
 
-export default function Trades() {
+export default function Trades({ user, onLogin }: { user: SteamUser | null; onLogin: () => void }) {
   const [filter, setFilter] = useState("all");
   const [dateRange, setDateRange] = useState("all");
+
+  if (!user) {
+    return (
+      <div className="container mx-auto px-6 py-20 text-center">
+        <div className="text-6xl mb-6">📋</div>
+        <h1 className="font-rajdhani text-5xl font-bold text-white mb-4">История трейдов</h1>
+        <p className="text-muted-foreground text-lg mb-8">Войди через Steam, чтобы увидеть свою историю сделок</p>
+        <button onClick={onLogin} className="neon-btn px-10 py-4 font-rajdhani font-bold text-xl tracking-wider uppercase rounded-sm inline-flex items-center gap-3">
+          <Icon name="LogIn" size={22} />
+          Войти через Steam
+        </button>
+      </div>
+    );
+  }
 
   const filtered = TRADES.filter(t => {
     if (filter === "buy") return t.type === "buy";

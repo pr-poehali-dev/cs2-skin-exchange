@@ -1,5 +1,6 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import Icon from "@/components/ui/icon";
+import { SteamUser } from "@/hooks/useAuth";
 
 const TICKER_TRADES = [
   { user: "Phantom_X", item: "AK-47 | Asiimov", price: "14 200 ₽", type: "buy" },
@@ -32,15 +33,8 @@ const rarityColors: Record<string, string> = {
   restricted: "#8847FF", classified: "#D32CE6", covert: "#EB4B4B", gold: "#FFD700",
 };
 
-export default function Home({ onNavigate }: { onNavigate: (page: string) => void }) {
-  const [tickerOffset, setTickerOffset] = useState(0);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setTickerOffset(prev => prev + 1);
-    }, 50);
-    return () => clearInterval(interval);
-  }, []);
+export default function Home({ onNavigate, user, onLogin }: { onNavigate: (page: string) => void; user: SteamUser | null; onLogin: () => void }) {
+  useEffect(() => {}, []);
 
   return (
     <div className="min-h-screen">
@@ -176,12 +170,23 @@ export default function Home({ onNavigate }: { onNavigate: (page: string) => voi
         <div className="card-dark border neon-border-cyan rounded-xl p-10 text-center relative overflow-hidden scanline">
           <div className="absolute inset-0 bg-gradient-to-r from-neon-cyan/5 via-transparent to-neon-purple/5" />
           <div className="relative">
-            <h2 className="font-rajdhani text-5xl font-bold text-white mb-4">Начни торговать прямо сейчас</h2>
-            <p className="text-muted-foreground text-lg mb-8">Войди через Steam и получи доступ к своему инвентарю мгновенно</p>
-            <button className="neon-btn px-10 py-5 font-rajdhani font-bold text-2xl tracking-wider uppercase rounded-sm inline-flex items-center gap-3">
-              <Icon name="LogIn" size={24} />
-              Войти через Steam
-            </button>
+            <h2 className="font-rajdhani text-5xl font-bold text-white mb-4">
+              {user ? `Привет, ${user.username}!` : "Начни торговать прямо сейчас"}
+            </h2>
+            <p className="text-muted-foreground text-lg mb-8">
+              {user ? "Твой инвентарь и история сделок доступны в личном кабинете" : "Войди через Steam и получи доступ к своему инвентарю мгновенно"}
+            </p>
+            {user ? (
+              <button onClick={() => onNavigate("inventory")} className="neon-btn px-10 py-5 font-rajdhani font-bold text-2xl tracking-wider uppercase rounded-sm inline-flex items-center gap-3">
+                <Icon name="Package" size={24} />
+                Мой инвентарь
+              </button>
+            ) : (
+              <button onClick={onLogin} className="neon-btn px-10 py-5 font-rajdhani font-bold text-2xl tracking-wider uppercase rounded-sm inline-flex items-center gap-3">
+                <Icon name="LogIn" size={24} />
+                Войти через Steam
+              </button>
+            )}
           </div>
         </div>
       </section>

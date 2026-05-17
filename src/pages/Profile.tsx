@@ -1,4 +1,11 @@
 import Icon from "@/components/ui/icon";
+import { SteamUser } from "@/hooks/useAuth";
+
+interface Props {
+  user: SteamUser | null;
+  onLogin: () => void;
+  onLogout: () => void;
+}
 
 const ACHIEVEMENTS = [
   { icon: "🏆", label: "Топ трейдер", desc: "100+ сделок" },
@@ -15,7 +22,23 @@ const ACTIVITY = [
   { action: "Вывод", item: "Баланс", amount: "-30 000 ₽", date: "14 мая", color: "#FF2052" },
 ];
 
-export default function Profile() {
+export default function Profile({ user, onLogin, onLogout }: Props) {
+  if (!user) {
+    return (
+      <div className="container mx-auto px-6 py-20 text-center">
+        <div className="text-6xl mb-6">👤</div>
+        <h1 className="font-rajdhani text-5xl font-bold text-white mb-4">Профиль</h1>
+        <p className="text-muted-foreground text-lg mb-8">Войди через Steam, чтобы увидеть свой профиль</p>
+        <button onClick={onLogin} className="neon-btn px-10 py-4 font-rajdhani font-bold text-xl tracking-wider uppercase rounded-sm inline-flex items-center gap-3">
+          <Icon name="LogIn" size={22} />
+          Войти через Steam
+        </button>
+      </div>
+    );
+  }
+
+  const joinYear = new Date(user.created_at).getFullYear();
+
   return (
     <div className="container mx-auto px-6 py-10">
       {/* Profile Header */}
@@ -24,21 +47,23 @@ export default function Profile() {
         <div className="relative flex flex-col md:flex-row items-start md:items-center gap-6">
           {/* Avatar */}
           <div className="relative">
-            <div className="w-24 h-24 rounded-full bg-gradient-to-br from-neon-cyan/30 to-neon-purple/30 border-2 border-neon-cyan flex items-center justify-center text-5xl neon-glow-cyan">
-              🎮
-            </div>
+            {user.avatar_full ? (
+              <img src={user.avatar_full} alt={user.username} className="w-24 h-24 rounded-full border-2 border-neon-cyan neon-glow-cyan" />
+            ) : (
+              <div className="w-24 h-24 rounded-full bg-gradient-to-br from-neon-cyan/30 to-neon-purple/30 border-2 border-neon-cyan flex items-center justify-center text-5xl neon-glow-cyan">🎮</div>
+            )}
             <div className="absolute -bottom-1 -right-1 bg-green-500 w-5 h-5 rounded-full border-2 border-background" />
           </div>
 
           {/* Info */}
           <div className="flex-1">
-            <div className="flex items-center gap-3 mb-1">
-              <h1 className="font-rajdhani text-4xl font-bold text-white">PhantomX_pro</h1>
-              <span className="bg-neon-gold/20 border border-neon-gold/40 text-neon-gold text-xs font-rajdhani font-bold px-2.5 py-1 rounded">
-                💎 DIAMOND
-              </span>
+            <div className="flex items-center gap-3 mb-1 flex-wrap">
+              <h1 className="font-rajdhani text-4xl font-bold text-white">{user.username}</h1>
+              {user.role === "admin" && (
+                <span className="bg-neon-red/20 border border-neon-red/40 text-neon-red text-xs font-rajdhani font-bold px-2.5 py-1 rounded">⚙️ ADMIN</span>
+              )}
             </div>
-            <div className="text-muted-foreground mb-4">Steam ID: STEAM_0:1:88241999 · Участник с 2023</div>
+            <div className="text-muted-foreground mb-4">Steam ID: {user.steam_id} · Участник с {joinYear}</div>
             <div className="grid grid-cols-3 md:grid-cols-6 gap-4">
               {[
                 { label: "Сделок", value: "247" },
@@ -59,7 +84,7 @@ export default function Profile() {
           {/* Balance */}
           <div className="card-dark border neon-border-cyan rounded-lg p-5 min-w-[200px]">
             <div className="text-muted-foreground text-sm mb-1">Баланс</div>
-            <div className="neon-text-cyan font-rajdhani text-4xl font-bold mb-4">128 500 ₽</div>
+            <div className="neon-text-cyan font-rajdhani text-4xl font-bold mb-4">{user.balance.toLocaleString("ru-RU")} ₽</div>
             <div className="flex flex-col gap-2">
               <button className="neon-btn py-2 text-sm font-rajdhani font-semibold tracking-wider uppercase rounded-sm w-full">
                 Пополнить

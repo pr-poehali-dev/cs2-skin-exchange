@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import Icon from "@/components/ui/icon";
+import { useAuth } from "@/hooks/useAuth";
 import Home from "@/pages/Home";
 import Catalog from "@/pages/Catalog";
 import Inventory from "@/pages/Inventory";
@@ -25,6 +26,7 @@ const NAV = [
 function SkinVaultApp() {
   const [page, setPage] = useState<Page>("home");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { user, loading, loginWithSteam, logout, getSessionId } = useAuth();
 
   const navigate = (p: string) => {
     setPage(p as Page);
@@ -68,16 +70,52 @@ function SkinVaultApp() {
               ))}
             </div>
 
-            {/* Right */}
+            {/* Right — auth */}
             <div className="flex items-center gap-3">
-              <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded border border-neon-cyan/20 bg-neon-cyan/5">
-                <Icon name="Wallet" size={14} className="text-neon-cyan" />
-                <span className="font-rajdhani font-bold text-neon-cyan text-sm">128 500 ₽</span>
-              </div>
-              <button onClick={() => navigate("profile")} className="w-9 h-9 rounded-full bg-neon-purple/20 border border-neon-purple/30 flex items-center justify-center hover:border-neon-purple/60 transition-all text-lg">
-                🎮
-              </button>
-              <button className="md:hidden p-2 text-muted-foreground hover:text-white" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
+              {loading ? (
+                <div className="w-24 h-8 rounded bg-muted animate-pulse" />
+              ) : user ? (
+                <>
+                  <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded border border-neon-cyan/20 bg-neon-cyan/5">
+                    <Icon name="Wallet" size={14} className="text-neon-cyan" />
+                    <span className="font-rajdhani font-bold text-neon-cyan text-sm">
+                      {user.balance.toLocaleString("ru-RU")} ₽
+                    </span>
+                  </div>
+                  <button
+                    onClick={() => navigate("profile")}
+                    className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+                  >
+                    <img
+                      src={user.avatar}
+                      alt={user.username}
+                      className="w-9 h-9 rounded-full border-2 border-neon-purple/50"
+                    />
+                    <span className="hidden lg:block text-sm font-semibold text-white max-w-[120px] truncate">
+                      {user.username}
+                    </span>
+                  </button>
+                  <button
+                    onClick={logout}
+                    className="hidden md:flex items-center p-2 text-muted-foreground hover:text-red-400 transition-colors"
+                    title="Выйти"
+                  >
+                    <Icon name="LogOut" size={16} />
+                  </button>
+                </>
+              ) : (
+                <button
+                  onClick={loginWithSteam}
+                  className="neon-btn px-4 py-2 font-rajdhani font-bold text-sm tracking-wider uppercase rounded-sm hidden md:flex items-center gap-2"
+                >
+                  <Icon name="LogIn" size={15} />
+                  Steam
+                </button>
+              )}
+              <button
+                className="md:hidden p-2 text-muted-foreground hover:text-white"
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              >
                 <Icon name={mobileMenuOpen ? "X" : "Menu"} size={22} />
               </button>
             </div>
@@ -104,6 +142,24 @@ function SkinVaultApp() {
                   {item.label}
                 </button>
               ))}
+              {!user && (
+                <button
+                  onClick={loginWithSteam}
+                  className="neon-btn mt-2 py-3 font-rajdhani font-bold tracking-wider uppercase rounded-sm flex items-center justify-center gap-2"
+                >
+                  <Icon name="LogIn" size={18} />
+                  Войти через Steam
+                </button>
+              )}
+              {user && (
+                <button
+                  onClick={logout}
+                  className="mt-2 py-3 border border-border rounded text-muted-foreground font-rajdhani font-semibold flex items-center justify-center gap-2 hover:text-red-400 hover:border-red-400/30 transition-all"
+                >
+                  <Icon name="LogOut" size={16} />
+                  Выйти
+                </button>
+              )}
             </div>
           </div>
         )}
@@ -111,12 +167,12 @@ function SkinVaultApp() {
 
       {/* PAGE */}
       <main key={page} className="animate-fade-up">
-        {page === "home" && <Home onNavigate={navigate} />}
+        {page === "home" && <Home onNavigate={navigate} user={user} onLogin={loginWithSteam} />}
         {page === "catalog" && <Catalog />}
-        {page === "inventory" && <Inventory />}
-        {page === "trades" && <Trades />}
-        {page === "profile" && <Profile />}
-        {page === "admin" && <Admin />}
+        {page === "inventory" && <Inventory user={user} onLogin={loginWithSteam} getSessionId={getSessionId} />}
+        {page === "trades" && <Trades user={user} onLogin={loginWithSteam} />}
+        {page === "profile" && <Profile user={user} onLogin={loginWithSteam} onLogout={logout} />}
+        {page === "admin" && <Admin user={user} />}
         {page === "support" && <Support />}
       </main>
 

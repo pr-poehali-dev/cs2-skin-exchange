@@ -1,5 +1,6 @@
 import { useState } from "react";
 import Icon from "@/components/ui/icon";
+import { SteamUser } from "@/hooks/useAuth";
 
 const BOTS = [
   { id: 1, name: "TradeBot #1", status: "online", trades: 142, balance: 85000, items: 234 },
@@ -34,8 +35,18 @@ const statusConfig: Record<string, { label: string; color: string; bg: string }>
   suspended: { label: "Заморожен", color: "#FFD700", bg: "rgba(255,215,0,0.1)" },
 };
 
-export default function Admin() {
+export default function Admin({ user }: { user: SteamUser | null }) {
   const [tab, setTab] = useState("overview");
+
+  if (!user || user.role !== "admin") {
+    return (
+      <div className="container mx-auto px-6 py-20 text-center">
+        <div className="text-6xl mb-6">🔒</div>
+        <h1 className="font-rajdhani text-5xl font-bold text-white mb-4">Доступ закрыт</h1>
+        <p className="text-muted-foreground text-lg">Эта страница доступна только администраторам платформы</p>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto px-6 py-10">
